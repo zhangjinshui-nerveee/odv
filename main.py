@@ -16,6 +16,26 @@ def read_data(file_name: str) -> pd.DataFrame:
     df = pd.read_csv(file_name, skiprows=20)
     return df
 
+def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
+    """Downsample df to include only n data points that are equally spread out"""
+    total_rows = len(df)
+
+    # If requesting more points than there are in total
+    if n >= total_rows:
+        return df
+
+    step = total_rows / n
+    indices = [int(i * step + step / 2) for i in range(n)]
+
+    downsampled_df = df.iloc[indices]
+    return downsampled_df
+
 if __name__ == "__main__":
     df = read_data("tek5494.csv")
     print(df.head())
+
+    print()
+
+    df = downsample(df, 10_000)
+    print(df.head())
+    print(len(df))
