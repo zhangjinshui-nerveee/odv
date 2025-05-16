@@ -30,7 +30,7 @@ def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
     downsampled_df = df.iloc[indices]
     return downsampled_df
 
-def plot_combined(df: pd.DataFrame):
+def plot_combined(df: pd.DataFrame, show_fig: bool):
     """Plot the given df such that all channels are combined in one plot"""
     fig = go.Figure()
 
@@ -69,7 +69,9 @@ def plot_combined(df: pd.DataFrame):
         ),
     )
 
-    fig.show()
+    if show_fig:
+        fig.show()
+    return fig
 
 if __name__ == "__main__":
     df = read_data("tek5494.csv")
@@ -81,4 +83,4 @@ if __name__ == "__main__":
     print(df.head())
     print(len(df))
 
-    plot_combined(df)
+    plot_combined(df, show_fig=True)
