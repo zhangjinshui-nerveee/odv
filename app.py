@@ -50,11 +50,12 @@ app.layout = [
         }
     ),
 
-    dcc.Graph(id="graph", style={"width": "80%", "margin": "auto"})
+    dcc.Graph(id="graph")
 ]
 
 @callback(
     Output("graph", "figure"),
+    Output("graph", "style"),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
     State("upload-data", "last_modified"),
@@ -62,7 +63,7 @@ app.layout = [
 )
 def update_graph(contents, filename, last_modified, num_points):
     if contents is None:
-        return None
+        return None, {"display": "none"}
 
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
@@ -70,7 +71,7 @@ def update_graph(contents, filename, last_modified, num_points):
     df = main.downsample(df, num_points)
 
     fig = main.plot_combined(df, show_fig=False)
-    return fig
+    return fig, {"width": "80%", "margin": "auto"}
 
 if __name__ == "__main__":
     app.run(debug=True)
