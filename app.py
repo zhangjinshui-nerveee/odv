@@ -50,6 +50,27 @@ app.layout = [
         }
     ),
 
+    html.Div(
+        [
+            html.Label("Plot mode:", style={"marginRight": "10px"}),
+            dcc.RadioItems(
+                id="plot-mode",
+                options=[
+                    {"label": "Combined", "value": "combined"},
+                    {"label": "Split", "value": "split"}
+                ],
+                value="combined",
+                labelStyle={"display": "inline-block", "marginRight": "5px"}
+            )
+        ],
+        style={
+            "display": "flex",
+            "justifyContent": "center",
+            "alignItems": "center",
+            "marginBottom": "20px"
+        }
+    ),
+
     dcc.Graph(id="graph")
 ]
 
@@ -59,9 +80,10 @@ app.layout = [
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
     State("upload-data", "last_modified"),
-    Input("num-points", "value")
+    Input("num-points", "value"),
+    Input("plot-mode", "value")
 )
-def update_graph(contents, filename, last_modified, num_points):
+def update_graph(contents, filename, last_modified, num_points, plot_mode):
     if contents is None:
         return None, {"display": "none"}
 
@@ -70,7 +92,10 @@ def update_graph(contents, filename, last_modified, num_points):
     df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), skiprows=20)
     df = main.downsample(df, num_points)
 
-    fig = main.plot_combined(df, show_fig=False)
+    if plot_mode == "combined":
+        fig = main.plot_combined(df, show_fig=False)
+    else:
+        fig = main.plot_split(df, show_fig=False)
     return fig, {"width": "80%", "margin": "auto"}
 
 if __name__ == "__main__":
