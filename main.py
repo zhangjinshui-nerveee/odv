@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 '''
 MILESTONES
@@ -73,6 +74,44 @@ def plot_combined(df: pd.DataFrame, show_fig: bool):
         fig.show()
     return fig
 
+def plot_split(df: pd.DataFrame, show_fig: bool):
+    """Plot the given df with each channel in a separate subplot"""
+    fig = make_subplots(rows=3, cols=1, shared_xaxes=True,
+                        subplot_titles=["CH1", "CH2", "CH4"])
+
+    fig.add_trace(go.Scatter(
+        x=df["TIME"],
+        y=df["CH1"],
+        mode="lines",
+        name="CH1",
+        line=dict(color="yellow")
+    ), row=1, col=1)
+    fig.add_trace(go.Scatter(
+        x=df["TIME"],
+        y=df["CH2"],
+        mode="lines",
+        name="CH2",
+        line=dict(color="cyan")
+    ), row=2, col=1)
+    fig.add_trace(go.Scatter(
+        x=df["TIME"],
+        y=df["CH4"],
+        mode="lines",
+        name="CH4",
+        line=dict(color="lime")
+    ), row=3, col=1)
+
+    fig.update_layout(
+        template="plotly_dark",
+        title=dict(text="Oscilloscope Data")
+    )
+    fig.update_xaxes(griddash="dot", zeroline=False)
+    fig.update_yaxes(griddash="dot", zeroline=False)
+
+    if show_fig:
+        fig.show()
+    return fig
+
 if __name__ == "__main__":
     df = read_data("tek5494.csv")
     print(df.head())
@@ -84,3 +123,4 @@ if __name__ == "__main__":
     print(len(df))
 
     plot_combined(df, show_fig=True)
+    plot_split(df, show_fig=True)
