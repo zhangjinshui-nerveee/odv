@@ -14,6 +14,17 @@ MILESTONES
 - [ ] change the input approach of selecting x-range to mouse-dragging
 '''
 
+CHANNEL_COLORS = {
+    "CH1": "yellow",
+    "CH2": "cyan",
+    "CH3": "purple",
+    "CH4": "lime",
+    "REF1": "lightgray",
+    "REF2": "lightgray",
+    "REF3": "lightgray",
+    "REF4": "lightgray",
+}
+
 def read_data(file_name: str) -> pd.DataFrame:
     """Read data from CSV file and return as DataFrame"""
     df = pd.read_csv(file_name, skiprows=20)
@@ -45,27 +56,16 @@ def plot_combined(df: pd.DataFrame, show_fig: bool):
     """Plot the given df such that all channels are combined in one plot"""
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH1"],
-        mode="lines",
-        name="CH1",
-        line=dict(color="yellow")
-    ))
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH2"],
-        mode="lines",
-        name="CH2",
-        line=dict(color="cyan")
-    ))
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH4"],
-        mode="lines",
-        name="CH4",
-        line=dict(color="lime")
-    ))
+    channel_columns = get_channel_columns(df)
+
+    for channel_column in channel_columns:
+        fig.add_trace(go.Scatter(
+            x=df["TIME"],
+            y=df[channel_column],
+            mode="lines",
+            name=channel_column,
+            line=dict(color=CHANNEL_COLORS[channel_column])
+        ))
 
     fig.update_layout(
         template="plotly_dark",
@@ -86,30 +86,19 @@ def plot_combined(df: pd.DataFrame, show_fig: bool):
 
 def plot_split(df: pd.DataFrame, show_fig: bool):
     """Plot the given df with each channel in a separate subplot"""
-    fig = make_subplots(rows=3, cols=1, shared_xaxes=True,
-                        subplot_titles=["CH1", "CH2", "CH4"])
+    channel_columns = get_channel_columns(df)
 
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH1"],
-        mode="lines",
-        name="CH1",
-        line=dict(color="yellow")
-    ), row=1, col=1)
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH2"],
-        mode="lines",
-        name="CH2",
-        line=dict(color="cyan")
-    ), row=2, col=1)
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH4"],
-        mode="lines",
-        name="CH4",
-        line=dict(color="lime")
-    ), row=3, col=1)
+    fig = make_subplots(rows=len(channel_columns), cols=1, shared_xaxes=True,
+                        subplot_titles=channel_columns)
+
+    for i, channel_column in enumerate(channel_columns, start=1):
+        fig.add_trace(go.Scatter(
+            x=df["TIME"],
+            y=df[channel_column],
+            mode="lines",
+            name=channel_column,
+            line=dict(color=CHANNEL_COLORS[channel_column])
+        ), row=i, col=1)
 
     fig.update_layout(
         template="plotly_dark",
