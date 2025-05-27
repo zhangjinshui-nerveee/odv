@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -11,6 +13,17 @@ MILESTONES
 - [ ] add function to allow select x-axis range
 - [ ] change the input approach of selecting x-range to mouse-dragging
 '''
+
+CHANNEL_COLORS = {
+    "CH1": "yellow",
+    "CH2": "cyan",
+    "CH3": "purple",
+    "CH4": "lime",
+    "REF1": "lightgray",
+    "REF2": "lightgray",
+    "REF3": "lightgray",
+    "REF4": "lightgray",
+}
 
 def read_data(file_name: str) -> pd.DataFrame:
     """Read data from CSV file and return as DataFrame"""
@@ -31,31 +44,28 @@ def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
     downsampled_df = df.iloc[indices]
     return downsampled_df
 
+def get_channel_columns(df: pd.DataFrame) -> list[str]:
+    """Detect columns that should be treated as channels"""
+    columns = df.columns
+    channel_columns = [
+        c for c in columns if c.startswith("CH") or c.startswith("REF")
+    ]
+    return channel_columns
+
 def plot_combined(df: pd.DataFrame, show_fig: bool):
     """Plot the given df such that all channels are combined in one plot"""
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH1"],
-        mode="lines",
-        name="CH1",
-        line=dict(color="yellow")
-    ))
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH2"],
-        mode="lines",
-        name="CH2",
-        line=dict(color="cyan")
-    ))
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH4"],
-        mode="lines",
-        name="CH4",
-        line=dict(color="lime")
-    ))
+    channel_columns = get_channel_columns(df)
+
+    for channel_column in channel_columns:
+        fig.add_trace(go.Scatter(
+            x=df["TIME"],
+            y=df[channel_column],
+            mode="lines",
+            name=channel_column,
+            line=dict(color=CHANNEL_COLORS[channel_column])
+        ))
 
     fig.update_layout(
         template="plotly_dark",
@@ -76,30 +86,19 @@ def plot_combined(df: pd.DataFrame, show_fig: bool):
 
 def plot_split(df: pd.DataFrame, show_fig: bool):
     """Plot the given df with each channel in a separate subplot"""
-    fig = make_subplots(rows=3, cols=1, shared_xaxes=True,
-                        subplot_titles=["CH1", "CH2", "CH4"])
+    channel_columns = get_channel_columns(df)
 
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH1"],
-        mode="lines",
-        name="CH1",
-        line=dict(color="yellow")
-    ), row=1, col=1)
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH2"],
-        mode="lines",
-        name="CH2",
-        line=dict(color="cyan")
-    ), row=2, col=1)
-    fig.add_trace(go.Scatter(
-        x=df["TIME"],
-        y=df["CH4"],
-        mode="lines",
-        name="CH4",
-        line=dict(color="lime")
-    ), row=3, col=1)
+    fig = make_subplots(rows=len(channel_columns), cols=1, shared_xaxes=True,
+                        subplot_titles=channel_columns)
+
+    for i, channel_column in enumerate(channel_columns, start=1):
+        fig.add_trace(go.Scatter(
+            x=df["TIME"],
+            y=df[channel_column],
+            mode="lines",
+            name=channel_column,
+            line=dict(color=CHANNEL_COLORS[channel_column])
+        ), row=i, col=1)
 
     fig.update_layout(
         template="plotly_dark",
@@ -113,7 +112,7 @@ def plot_split(df: pd.DataFrame, show_fig: bool):
     return fig
 
 if __name__ == "__main__":
-    df = read_data("tek5494.csv")
+    df = read_data(os.path.join("MDO3054", "tek5494.csv"))
     print(df.head())
 
     print()
@@ -124,3 +123,5 @@ if __name__ == "__main__":
 
     plot_combined(df, show_fig=True)
     plot_split(df, show_fig=True)
+
+    print(get_channel_columns(df))
