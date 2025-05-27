@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -30,6 +32,14 @@ def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
 
     downsampled_df = df.iloc[indices]
     return downsampled_df
+
+def get_channel_columns(df: pd.DataFrame) -> list[str]:
+    """Detect columns that should be treated as channels"""
+    columns = df.columns
+    channel_columns = [
+        c for c in columns if c.startswith("CH") or c.startswith("REF")
+    ]
+    return channel_columns
 
 def plot_combined(df: pd.DataFrame, show_fig: bool):
     """Plot the given df such that all channels are combined in one plot"""
@@ -113,7 +123,7 @@ def plot_split(df: pd.DataFrame, show_fig: bool):
     return fig
 
 if __name__ == "__main__":
-    df = read_data("tek5494.csv")
+    df = read_data(os.path.join("MDO3054", "tek5494.csv"))
     print(df.head())
 
     print()
@@ -124,3 +134,5 @@ if __name__ == "__main__":
 
     plot_combined(df, show_fig=True)
     plot_split(df, show_fig=True)
+
+    print(get_channel_columns(df))
