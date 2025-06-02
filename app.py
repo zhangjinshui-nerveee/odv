@@ -73,17 +73,32 @@ app.layout = [
 
     dcc.Graph(id="graph"),
 
-    dcc.Store(id="trace-visibilities-store", data={})
+    dcc.Store(id="trace-visibilities-store", data={}),
+    dcc.Store(id="data-store")
 ]
+
+@callback(
+    Output("data-store", "data"),
+
+    Input("upload-data", "contents"),
+    State("upload-data", "filename"),
+    State("upload-data", "last_modified")
+)
+def upload_data(contents, filename, last_modified):
+    if contents is None:
+        return None
+
+    content_type, content_string = contents.split(",")
+    decoded = base64.b64decode(content_string)
+    data = decoded.decode("utf-8")
+    return data
 
 @callback(
     Output("graph", "figure"),
     Output("graph", "style"),
     Output("trace-visibilities-store", "data"),
 
-    Input("upload-data", "contents"),
-    State("upload-data", "filename"),
-    State("upload-data", "last_modified"),
+    Input("data-store", "data"),
     Input("num-points", "value"),
     Input("plot-mode", "value"),
     Input("graph", "relayoutData"),
@@ -91,21 +106,17 @@ app.layout = [
     State("trace-visibilities-store", "data")
 )
 def update_graph(
-    contents,
-    filename,
-    last_modified,
+    data,
     num_points,
     plot_mode,
     relayoutData,
     restyleData,
     trace_visibilities_store
 ):
-    if contents is None:
+    if data is None:
         return None, {"display": "none"}, None
 
-    content_type, content_string = contents.split(",")
-    decoded = base64.b64decode(content_string)
-    df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), skiprows=20)
+    df = pd.read_csv(io.StringIO(data), skiprows=20)
 
     if relayoutData:
         x0 = relayoutData.get("xaxis.range[0]")
