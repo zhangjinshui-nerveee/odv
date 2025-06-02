@@ -71,32 +71,70 @@ app.layout = [
         }
     ),
 
-    dcc.Graph(id="graph")
+    dcc.Graph(id="graph"),
+
+    dcc.Store(id="trace-visibilities-store", data={})
 ]
 
 @callback(
     Output("graph", "figure"),
     Output("graph", "style"),
+    Output("trace-visibilities-store", "data"),
+
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
     State("upload-data", "last_modified"),
     Input("num-points", "value"),
-    Input("plot-mode", "value")
+    Input("plot-mode", "value"),
+    Input("graph", "relayoutData"),
+    Input("graph", "restyleData"),
+    State("trace-visibilities-store", "data")
 )
-def update_graph(contents, filename, last_modified, num_points, plot_mode):
+def update_graph(
+    contents,
+    filename,
+    last_modified,
+    num_points,
+    plot_mode,
+    relayoutData,
+    restyleData,
+    trace_visibilities_store
+):
     if contents is None:
-        return None, {"display": "none"}
+        return None, {"display": "none"}, None
 
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
     df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), skiprows=20)
+
+    if relayoutData:
+        x0 = relayoutData.get("xaxis.range[0]")
+        x1 = relayoutData.get("xaxis.range[1]")
+        if x0 and x1:
+            df = df[(df["TIME"] >= x0) & (df["TIME"] <= x1)]
+
     df = main.downsample(df, num_points)
 
     if plot_mode == "combined":
         fig = main.plot_combined(df, show_fig=False)
     else:
         fig = main.plot_split(df, show_fig=False)
-    return fig, {"width": "80%", "margin": "auto"}
+
+    # Traces have visibility states of True (graphed) or "legendonly" (hidden)
+    if trace_visibilities_store is None:
+        trace_visibilities_store = {trace.name: True for trace in fig.data}
+    if restyleData and "visible" in restyleData[0]:
+        changed_visibilities = restyleData[0]["visible"]
+        changed_indexes = restyleData[1]
+        for visibility_state, i in zip(changed_visibilities, changed_indexes):
+            name = fig.data[i].name
+            trace_visibilities_store[name] = visibility_state
+    for trace in fig.data:
+        if trace.name in trace_visibilities_store:
+            trace.visible = trace_visibilities_store[trace.name]
+
+    return fig, {"width": "80%", "margin": "auto"}, trace_visibilities_store
+
 
 if __name__ == "__main__":
     app.run(debug=True)
