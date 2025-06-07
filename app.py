@@ -3,6 +3,7 @@ import io
 
 import pandas as pd
 from dash import Dash, html, dcc, Input, Output, State, callback
+from dash.dependencies import ALL
 
 import main
 
@@ -73,8 +74,18 @@ app.layout = [
 
     dcc.Graph(id="graph"),
 
+    html.Div(
+        id="rename-traces-container",
+        style={
+            "display": "flex",
+            "justifyContent": "center",
+            "alignItems": "center"
+        }
+    ),
+
     dcc.Store(id="trace-visibilities-store", data={}),
-    dcc.Store(id="data-store")
+    dcc.Store(id="data-store"),
+    dcc.Store(id="trace-names-store", data={})
 ]
 
 @callback(
@@ -94,6 +105,61 @@ def upload_data(contents, filename, last_modified):
     return data
 
 @callback(
+    Output("rename-traces-container", "children"),
+    Output("trace-names-store", "data"),
+
+    Input("data-store", "data")
+)
+def make_trace_rename_inputs(data):
+    if data is None:
+        return [], {}
+
+    df = pd.read_csv(io.StringIO(data), skiprows=20, nrows=1)
+    trace_names = main.get_channel_columns(df)
+    column_names_map = {name: name for name in trace_names}
+
+    table_rows = []
+    for trace in trace_names:
+        row = html.Tr([
+            html.Td(trace, style={"padding": "8px", "textAlign": "center"}),
+            html.Td(
+                dcc.Input(
+                    id={"type": "rename-trace", "index": trace},
+                    type="text",
+                    value=trace,
+                    style={"textAlign": "center"}
+                ),
+                style={"padding": "8px"}
+            )
+        ])
+        table_rows.append(row)
+
+    table = html.Div([
+        html.H2("Rename Traces", style={"textAlign": "center", "marginBottom": "5px"}),
+        html.Table(
+            [
+                html.Thead(html.Tr([
+                    html.Th("Original Name", style={"padding": "8px"}),
+                    html.Th("New Name", style={"padding": "8px"})
+                ])),
+                html.Tbody(table_rows)
+            ]
+        )
+    ])
+
+    return table, column_names_map
+
+@callback(
+    Output("trace-names-store", "data", allow_duplicate=True),
+
+    Input({"type": "rename-trace", "index": ALL}, "value"),
+    State({"type": "rename-trace", "index": ALL}, "id"),
+    prevent_initial_call=True
+)
+def update_trace_names(values, ids):
+    return {i["index"]: val for i, val in zip(ids, values)}
+
+@callback(
     Output("graph", "figure"),
     Output("graph", "style"),
     Output("trace-visibilities-store", "data"),
@@ -103,6 +169,7 @@ def upload_data(contents, filename, last_modified):
     Input("plot-mode", "value"),
     Input("graph", "relayoutData"),
     Input("graph", "restyleData"),
+    Input("trace-names-store", "data"),
     State("trace-visibilities-store", "data")
 )
 def update_graph(
@@ -111,6 +178,7 @@ def update_graph(
     plot_mode,
     relayoutData,
     restyleData,
+    trace_names_store,
     trace_visibilities_store
 ):
     if data is None:
@@ -130,6 +198,10 @@ def update_graph(
         fig = main.plot_combined(df, show_fig=False)
     else:
         fig = main.plot_split(df, show_fig=False)
+    if trace_names_store:
+        for trace in fig.data:
+            if trace.name in trace_names_store:
+                trace.name = trace_names_store[trace.name]
 
     # Traces have visibility states of True (graphed) or "legendonly" (hidden)
     if trace_visibilities_store is None:
