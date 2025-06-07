@@ -1,5 +1,6 @@
 import base64
 import io
+from datetime import datetime, UTC
 
 import pandas as pd
 from dash import Dash, html, dcc, Input, Output, State, callback
@@ -74,7 +75,8 @@ app.layout = [
     dcc.Graph(id="graph"),
 
     dcc.Store(id="trace-visibilities-store", data={}),
-    dcc.Store(id="data-store")
+    dcc.Store(id="data-store"),
+    dcc.Store(id="last-file-upload-time-store")
 ]
 
 @callback(
@@ -91,19 +93,21 @@ def upload_data(contents, filename, last_modified):
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
     data = decoded.decode("utf-8")
-    return data
+    return {"data": data, "file_upload_time": datetime.now(UTC).isoformat()}
 
 @callback(
     Output("graph", "figure"),
     Output("graph", "style"),
     Output("trace-visibilities-store", "data"),
+    Output("last-file-upload-time-store", "data"),
 
     Input("data-store", "data"),
     Input("num-points", "value"),
     Input("plot-mode", "value"),
     Input("graph", "relayoutData"),
     Input("graph", "restyleData"),
-    State("trace-visibilities-store", "data")
+    State("trace-visibilities-store", "data"),
+    State("last-file-upload-time-store", "data")
 )
 def update_graph(
     data,
@@ -111,14 +115,17 @@ def update_graph(
     plot_mode,
     relayoutData,
     restyleData,
-    trace_visibilities_store
+    trace_visibilities_store,
+    last_file_upload_time
 ):
     if data is None:
-        return None, {"display": "none"}, None
+        return None, {"display": "none"}, None, None
 
-    df = pd.read_csv(io.StringIO(data), skiprows=20)
+    df = pd.read_csv(io.StringIO(data.get("data")), skiprows=20)
+    file_upload_time = data.get("file_upload_time")
+    is_new_file = file_upload_time != last_file_upload_time
 
-    if relayoutData:
+    if relayoutData and not is_new_file:
         x0 = relayoutData.get("xaxis.range[0]")
         x1 = relayoutData.get("xaxis.range[1]")
         if x0 and x1:
@@ -144,7 +151,7 @@ def update_graph(
         if trace.name in trace_visibilities_store:
             trace.visible = trace_visibilities_store[trace.name]
 
-    return fig, {"width": "80%", "margin": "auto"}, trace_visibilities_store
+    return fig, {"width": "80%", "margin": "auto"}, trace_visibilities_store, file_upload_time
 
 
 if __name__ == "__main__":
