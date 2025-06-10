@@ -116,7 +116,7 @@ def make_trace_rename_inputs(data):
     if data is None:
         return [], {}
 
-    df = pd.read_csv(io.StringIO(data), skiprows=20, nrows=1)
+    df = pd.read_csv(io.StringIO(data.get("data")), skiprows=20, nrows=1)
     trace_names = main.get_channel_columns(df)
     column_names_map = {name: name for name in trace_names}
 
