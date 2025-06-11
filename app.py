@@ -36,53 +36,59 @@ app.layout = [
 
     html.Div(
         [
-            html.Label("Number of data points to show: "),
-            dcc.Input(
-                id="num-points",
-                type="number",
-                value=10000,
-                min=1,
-                step=1
-            )
-        ],
-        style={
-            "textAlign": "center",
-            "marginTop": "20px",
-            "marginBottom": "20px"
-        }
-    ),
+            html.Div([
+                html.Div(
+                    [
+                        html.Label("Number of data points to show: "),
+                        dcc.Input(
+                            id="num-points",
+                            type="number",
+                            value=10000,
+                            min=1,
+                            step=1
+                        )
+                    ],
+                    style={
+                        "textAlign": "center",
+                        "marginBottom": "20px"
+                    }
+                ),
 
-    html.Div(
-        [
-            html.Label("Plot mode:", style={"marginRight": "10px"}),
-            dcc.RadioItems(
-                id="plot-mode",
-                options=[
-                    {"label": "Combined", "value": "combined"},
-                    {"label": "Split", "value": "split"}
-                ],
-                value="combined",
-                labelStyle={"display": "inline-block", "marginRight": "5px"}
+                html.Div(
+                    [
+                        html.Label("Plot mode:", style={"marginRight": "10px"}),
+                        dcc.RadioItems(
+                            id="plot-mode",
+                            options=[
+                                {"label": "Combined", "value": "combined"},
+                                {"label": "Split", "value": "split"}
+                            ],
+                            value="combined",
+                            labelStyle={"display": "inline-block", "marginRight": "5px"}
+                        )
+                    ]
+                )
+            ], style={"flex": "0 0 auto", "marginRight": "40px"}),
+
+            html.Div(
+                id="rename-traces-container",
+                style={
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "alignItems": "center"
+                }
             )
         ],
         style={
             "display": "flex",
             "justifyContent": "center",
-            "alignItems": "center",
-            "marginBottom": "20px"
+            "alignItems": "flex-start",
+            "width": "80%",
+            "margin": "20px auto"
         }
     ),
 
     dcc.Graph(id="graph"),
-
-    html.Div(
-        id="rename-traces-container",
-        style={
-            "display": "flex",
-            "justifyContent": "center",
-            "alignItems": "center"
-        }
-    ),
 
     dcc.Store(id="trace-visibilities-store", data={}),
     dcc.Store(id="data-store"),
@@ -122,30 +128,41 @@ def make_trace_rename_inputs(data):
 
     table_rows = []
     for trace in trace_names:
-        row = html.Tr([
-            html.Td(trace, style={"padding": "8px", "textAlign": "center"}),
-            html.Td(
-                dcc.Input(
-                    id={"type": "rename-trace", "index": trace},
-                    type="text",
-                    value=trace,
-                    style={"textAlign": "center"}
-                ),
-                style={"padding": "8px"}
+        row = html.Div([
+            html.Label(
+                trace,
+                style={
+                    "display": "block",
+                    "textAlign": "center",
+                    "marginBottom": "5px",
+                    "fontWeight": "bold"
+                }
+            ),
+            dcc.Input(
+                id={"type": "rename-trace", "index": trace},
+                type="text",
+                value=trace,
+                style={
+                    "textAlign": "center",
+                    "width": "90%"
+                }
             )
-        ])
+        ], style={
+            "margin": "0 10px",
+            "width": "60px"
+        })
         table_rows.append(row)
 
     table = html.Div([
-        html.H2("Rename Traces", style={"textAlign": "center", "marginBottom": "5px"}),
-        html.Table(
-            [
-                html.Thead(html.Tr([
-                    html.Th("Original Name", style={"padding": "8px"}),
-                    html.Th("New Name", style={"padding": "8px"})
-                ])),
-                html.Tbody(table_rows)
-            ]
+        html.H3("Rename Traces", style={"textAlign": "center", "marginTop": "0", "marginBottom": "15px"}),
+        html.Div(
+            table_rows,
+            style={
+                "display": "flex",
+                "flexWrap": "wrap",
+                "gap": "10px",
+                "justifyContent": "center"
+            }
         )
     ])
 
