@@ -30,7 +30,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Build with PyInstaller
-      run: pyinstaller --onefile --windowed main.py # Use your own PyInstaller command here
+      run: pyinstaller --onefile --windowed app.py # Use your own PyInstaller command here
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
