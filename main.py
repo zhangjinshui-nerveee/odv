@@ -112,7 +112,7 @@ def plot_split(df: pd.DataFrame, show_fig: bool):
     return fig
 
 if __name__ == "__main__":
-    df = read_data(os.path.join("MDO3054", "tek5494.csv"))
+    df = read_data(os.path.join("example_data/MDO3054", "tek5494.csv"))
     print(df.head())
 
     print()
