@@ -1,6 +1,8 @@
 # ODV - Oscilloscope Data Viewer
 
 An open-source, web-based viewer for analyzing saved oscilloscope waveform data. This tool provides a simple and interactive way to inspect data files without needing proprietary software.
+![demo_odv](https://github.com/user-attachments/assets/8b617da2-fe39-4625-b2e9-76ecdabbfa4d)
+
 
 ## Overview
 
@@ -54,7 +56,8 @@ We welcome contributions, especially to expand support for more data formats!
 Reporting Bugs or Suggesting Features
 
 If you encounter a bug or have an idea for a new feature, please open an issue on GitHub. Provide as much detail as possible.
-Adding Support for Your Oscilloscope Data
+
+### Adding Support for Your Oscilloscope Data
 
 The main goal of this project is to support as many oscilloscope models as possible. If your data format is not currently supported, we would love to add it!
 
