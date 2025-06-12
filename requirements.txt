@@ -1,3 +1,4 @@
 pandas
 dash
 plotly
+pyinstaller
