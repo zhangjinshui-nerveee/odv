@@ -49,6 +49,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
 
+    # Grant the GITHUB_TOKEN permissions to write to the repository's contents (i.e., create a release)
+    permissions:
+      contents: write
+
     steps:
     - name: Download all build artifacts
       uses: actions/download-artifact@v4
