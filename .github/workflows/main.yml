@@ -1,10 +1,10 @@
-name: Build Python Executables
+name: Build and Release Executables
 
+# This workflow is now triggered when a new tag starting with 'v' is pushed
 on:
   push:
-    branches: [ "executables" ] # Triggers the workflow on push to the main branch
-  pull_request:
-    branches: [ "executables" ]
+    tags:
+      - 'v*'
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
 
 jobs:
@@ -22,21 +22,54 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11' # Or your desired python version
+        python-version: '3.11'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        # Make sure pyinstaller is in requirements.txt or install it here
+        pip install pyinstaller
 
     - name: Build with PyInstaller
-      run: pyinstaller --onefile --windowed app.py # Use your own PyInstaller command here
+      run: pyinstaller --onefile --windowed --name "my-app-${{ matrix.os }}" app.py
 
-    - name: Upload Artifact
+    - name: Upload executable as an artifact
       uses: actions/upload-artifact@v4
       with:
         name: my-app-${{ matrix.os }}
-        path: |
-          dist/*.exe
-          dist/*.dmg
-          dist/* # Adjust path based on the OS and output of PyInstaller
+        # The path now points to the specific executable file
+        path: dist/my-app-${{ matrix.os }}*
+
+
+  # This is the new job that creates the release
+  release:
+    name: Create GitHub Release
+    # This job runs only after the 'build' job has successfully completed for all OSs
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        # The path where all artifacts will be downloaded
+        path: artifacts
+
+    - name: Create Release and Upload Assets
+      # This action does the hard work of creating the release and uploading the files
+      uses: softprops/action-gh-release@v1
+      with:
+        # This will create a release with the name of the tag (e.g., "v1.0.1")
+        tag_name: ${{ github.ref_name }}
+        # This will use the tag name as the release title
+        name: Release ${{ github.ref_name }}
+        # This will automatically generate release notes from your commits since the last tag
+        generate_release_notes: true
+        # This wildcard uploads all the files we downloaded from the build artifacts
+        files: |
+          artifacts/**/*
+      env:
+        # The GITHUB_TOKEN is a special secret provided by GitHub Actions
+        # It's needed to give the action permission to create a release in your repository
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
