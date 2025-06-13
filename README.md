@@ -1,6 +1,8 @@
 # ODV - Oscilloscope Data Viewer
 
 An open-source, web-based viewer for analyzing saved oscilloscope waveform data. This tool provides a simple and interactive way to inspect data files without needing proprietary software.
+![demo_odv](https://github.com/user-attachments/assets/8b617da2-fe39-4625-b2e9-76ecdabbfa4d)
+
 
 ## Overview
 
@@ -17,13 +19,13 @@ The odv project aims to create a free, user-friendly viewer for data captured by
 
 There are two ways to run ODV: by downloading the ready-to-use application (easiest) or by running the code from the source (for developers).
 
-### For Users (Recommended)
+### For Users (Not Fully Tested Yet)
 
 1. Navigate to the Releases Page of this repository.
 2. Download the latest executable file for your operating system (e.g., odv-windows.exe, odv-macos).
 3. Double-click the file to run the application. A browser window will open with the viewer ready to use.
 
-### For Developers (Running from Source)
+### For Developers (Running from Source, Recommended)
 #### Prerequisites:
 
 - Python 3.8+
@@ -54,7 +56,8 @@ We welcome contributions, especially to expand support for more data formats!
 Reporting Bugs or Suggesting Features
 
 If you encounter a bug or have an idea for a new feature, please open an issue on GitHub. Provide as much detail as possible.
-Adding Support for Your Oscilloscope Data
+
+### Adding Support for Your Oscilloscope Data
 
 The main goal of this project is to support as many oscilloscope models as possible. If your data format is not currently supported, we would love to add it!
 
