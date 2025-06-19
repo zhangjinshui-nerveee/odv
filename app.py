@@ -11,6 +11,55 @@ import main
 app = Dash()
 app.title = "Oscilloscope Data Viewer"
 
+app.index_string = """
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+        <style>
+            html,
+            body,
+            #react-entry-point,
+            #root,
+            #_dash-app-content {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .full-height-container {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+            #graph-wrapper {
+                flex-grow: 1;
+                display: flex;
+                justify-content: center;
+            }
+            #graph {
+                width: 80%;
+                height: 100%;
+            }
+            #_dash-global-error-container,
+            #_dash-global-error-container > div {
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+"""
+
 app.layout = [
     html.H1("Oscilloscope Data Viewer", style={"textAlign": "center"}),
 
@@ -88,7 +137,11 @@ app.layout = [
         }
     ),
 
-    dcc.Graph(id="graph"),
+    html.Div(
+        id="graph-wrapper",
+        children=dcc.Graph(id="graph", style={"height": "100%"}),
+        className="full-height-container"
+    ),
 
     dcc.Store(id="trace-visibilities-store", data={}),
     dcc.Store(id="data-store"),
@@ -240,7 +293,7 @@ def update_graph(
         if trace.name in trace_visibilities_store:
             trace.visible = trace_visibilities_store[trace.name]
 
-    return fig, {"width": "80%", "margin": "auto"}, trace_visibilities_store, file_upload_time
+    return fig, {"width": "100%", "height": "100%"}, trace_visibilities_store, file_upload_time
 
 
 if __name__ == "__main__":
