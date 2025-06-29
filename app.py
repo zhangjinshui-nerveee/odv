@@ -1,6 +1,8 @@
 import base64
 import io
 from datetime import datetime, UTC
+import webbrowser
+import os
 
 import pandas as pd
 from dash import Dash, html, dcc, Input, Output, State, callback
@@ -297,4 +299,6 @@ def update_graph(
 
 
 if __name__ == "__main__":
+    if not os.environ.get("WERKZEUG_RUN_MAIN"):
+        webbrowser.open("http://127.0.0.1:8050")
     app.run(debug=True)
