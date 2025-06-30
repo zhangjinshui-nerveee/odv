@@ -85,6 +85,22 @@ app.layout = [
         multiple=False
     ),
 
+    html.Button(
+        "Quit",
+        id="shutdown-btn",
+        style={
+            "position": "absolute",
+            "top": "20px",
+            "right": "8%",
+            "padding": "10px 20px",
+            "backgroundColor": "red",
+            "color": "white",
+            "border": "none",
+            "borderRadius": "5px",
+            "cursor": "pointer",
+        }
+    ),
+
     html.Div(
         [
             html.Div([
@@ -297,6 +313,26 @@ def update_graph(
 
     return fig, {"width": "100%", "height": "100%"}, trace_visibilities_store, file_upload_time
 
+@callback(
+    Input("shutdown-btn", "n_clicks"),
+    prevent_initial_call=True
+)
+def shutdown_server(n_clicks):
+    os._exit(0)
+
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        if (n_clicks > 0) {
+            window.close();
+        }
+        return true;
+    }
+    """,
+    Output("shutdown-btn", "disabled"),
+    Input("shutdown-btn", "n_clicks"),
+    prevent_initial_call=True
+)
 
 if __name__ == "__main__":
     if not os.environ.get("WERKZEUG_RUN_MAIN"):
