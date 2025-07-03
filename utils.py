@@ -1,3 +1,5 @@
+"""Utilities"""
+
 import os
 
 import pandas as pd
@@ -8,12 +10,13 @@ from plotly.subplots import make_subplots
 MILESTONES
 - [x] read data with pandas
 - [x] plot data out, adjust the format to match the appearance of oscilloscope, show only 10,000 data points (equally spreaded)
-- [ ] use packages of tkinter or dash to embed the plot in a user-interfacing frame
-- [ ] add button to allow spread signals into different channels, e.g. we have three signals in tek5494, the toggle button to allow show them on the same plot or three separate ones
-- [ ] add function to allow select x-axis range
-- [ ] change the input approach of selecting x-range to mouse-dragging
+- [x] use packages of tkinter or dash to embed the plot in a user-interfacing frame
+- [x] add button to allow spread signals into different channels, e.g. we have three signals in tek5494, the toggle button to allow show them on the same plot or three separate ones
+- [x] add function to allow select x-axis range
+- [x] change the input approach of selecting x-range to mouse-dragging
 '''
 
+# Mapping between channel names and colors
 CHANNEL_COLORS = {
     "CH1": "yellow",
     "CH2": "cyan",
@@ -26,12 +29,27 @@ CHANNEL_COLORS = {
 }
 
 def read_data(file_name: str) -> pd.DataFrame:
-    """Read data from CSV file and return as DataFrame"""
+    """Read oscilloscope CSV data from file, skipping metadata header rows
+
+    Args:
+        file_name: Path to the CSV file
+
+    Returns:
+        DataFrame containing oscilloscope data
+    """
     df = pd.read_csv(file_name, skiprows=20)
     return df
 
 def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
-    """Downsample df to include only n data points that are equally spread out"""
+    """Downsample df to include only n data points that are equally spread out
+
+    Args:
+        df: Input DataFrame
+        n: Number of data points to retain
+
+    Returns:
+        Downsampled DataFrame with n rows
+    """
     total_rows = len(df)
 
     # If requesting more points than there are in total
@@ -45,7 +63,14 @@ def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
     return downsampled_df
 
 def get_channel_columns(df: pd.DataFrame) -> list[str]:
-    """Detect columns that should be treated as channels"""
+    """Detect columns that should be treated as channels
+
+    Args:
+        df: Input DataFrame
+
+    Returns:
+        List of column names that are channels (CH* or REF*)
+    """
     columns = df.columns
     channel_columns = [
         c for c in columns if c.startswith("CH") or c.startswith("REF")
@@ -53,7 +78,15 @@ def get_channel_columns(df: pd.DataFrame) -> list[str]:
     return channel_columns
 
 def plot_combined(df: pd.DataFrame, show_fig: bool):
-    """Plot the given df such that all channels are combined in one plot"""
+    """Plot the given df such that all channels are combined in one plot
+
+    Args:
+        df: DataFrame containing oscilloscope data
+        show_fig: Whether to display the figure
+
+    Returns:
+        Plotly Figure object
+    """
     fig = go.Figure()
 
     channel_columns = get_channel_columns(df)
@@ -85,7 +118,15 @@ def plot_combined(df: pd.DataFrame, show_fig: bool):
     return fig
 
 def plot_split(df: pd.DataFrame, show_fig: bool):
-    """Plot the given df with each channel in a separate subplot"""
+    """Plot the given df with each channel in a separate subplot
+
+    Args:
+        df: DataFrame containing oscilloscope data
+        show_fig: Whether to display the figure immediately
+
+    Returns:
+        Plotly Figure object with subplots
+    """
     channel_columns = get_channel_columns(df)
 
     fig = make_subplots(rows=len(channel_columns), cols=1, shared_xaxes=True,
