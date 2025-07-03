@@ -10,7 +10,7 @@ import pandas as pd
 from dash import Dash, html, dcc, Input, Output, State, callback
 from dash.dependencies import ALL
 
-import utils
+import main
 
 app = Dash()
 app.title = "Oscilloscope Data Viewer"
@@ -222,7 +222,7 @@ def make_trace_rename_inputs(data):
         return [], {}
 
     df = pd.read_csv(io.StringIO(data.get("data")), skiprows=20, nrows=1)
-    trace_names = utils.get_channel_columns(df)
+    trace_names = main.get_channel_columns(df)
     column_names_map = {name: name for name in trace_names}
 
     table_rows = []
@@ -353,12 +353,12 @@ def update_graph(
         if x0 and x1:
             df = df[(df["TIME"] >= x0) & (df["TIME"] <= x1)]
 
-    df = utils.downsample(df, num_points)
+    df = main.downsample(df, num_points)
 
     if plot_mode == "combined":
-        fig = utils.plot_combined(df, show_fig=False)
+        fig = main.plot_combined(df, show_fig=False)
     else:
-        fig = utils.plot_split(df, show_fig=False)
+        fig = main.plot_split(df, show_fig=False)
     if trace_names_store:
         for trace in fig.data:
             if trace.name in trace_names_store:
