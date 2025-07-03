@@ -1,3 +1,5 @@
+"""Interactive Dash application for viewing oscilloscope data"""
+
 import base64
 import io
 from datetime import datetime, UTC
@@ -180,6 +182,16 @@ app.layout = [
     State("upload-data", "last_modified")
 )
 def upload_data(contents, filename, last_modified):
+    """Decode and store uploaded CSV data
+
+    Args:
+        contents: Base64-encoded contents of the uploaded CSV file
+        filename: Name of the uploaded file
+        last_modified: Last modified timestamp of the uploaded file
+
+    Returns:
+        A dictionary containing the CSV data as a string and the upload timestamp, or None if no data is uploaded
+    """
     if contents is None:
         return None
 
@@ -196,6 +208,16 @@ def upload_data(contents, filename, last_modified):
     Input("data-store", "data")
 )
 def make_trace_rename_inputs(data):
+    """Generate trace renaming input fields and initialize column names mapping
+
+    Args:
+        data: Dictionary containing uploaded CSV data
+
+    Returns:
+        A tuple containing:
+            - A Dash HTML component with input fields for renaming traces
+            - A dictionary mapping original trace names to current names
+    """
     if data is None:
         return [], {}
 
@@ -261,6 +283,15 @@ def make_trace_rename_inputs(data):
     prevent_initial_call=True
 )
 def update_trace_names(values, ids):
+    """Update the mapping of trace names based on user input
+
+    Args:
+        values: List of updated trace name strings entered by the user
+        ids: List of Dash pattern-matching IDs corresponding to each trace
+
+    Returns:
+        A dictionary mapping original trace names to updated names
+    """
     return {i["index"]: val for i, val in zip(ids, values)}
 
 
@@ -289,6 +320,25 @@ def update_graph(
     trace_visibilities_store,
     last_file_upload_time
 ):
+    """Update plot
+
+    Args:
+        data: Uploaded CSV data dictionary
+        num_points: Number of data points to display after downsampling
+        plot_mode: Plot mode ('combined' or 'split')
+        relayoutData: Plotly relayout data containing updated x-axis ranges
+        restyleData: Plotly restyle data indicating visibility changes
+        trace_names_store: Dictionary of user-renamed traces
+        trace_visibilities_store: Current visibility state of traces
+        last_file_upload_time: Timestamp of the last uploaded file
+
+    Returns:
+        A tuple containing:
+            - The updated Plotly figure
+            - Graph style dictionary
+            - Updated trace visibility state dictionary
+            - Current file upload timestamp
+    """
     if data is None:
         return None, {"display": "none"}, None, None
 
@@ -296,6 +346,7 @@ def update_graph(
     file_upload_time = data.get("file_upload_time")
     is_new_file = file_upload_time != last_file_upload_time
 
+    # Adjust time range
     if relayoutData and not is_new_file:
         x0 = relayoutData.get("xaxis.range[0]")
         x1 = relayoutData.get("xaxis.range[1]")
@@ -315,6 +366,7 @@ def update_graph(
 
     # Traces have visibility states of True (graphed) or "legendonly" (hidden)
     if trace_visibilities_store is None:
+        # Default to show all traces
         trace_visibilities_store = {trace.name: True for trace in fig.data}
     if restyleData and "visible" in restyleData[0]:
         changed_visibilities = restyleData[0]["visible"]
@@ -339,8 +391,8 @@ def update_graph(
     prevent_initial_call=True
 )
 def shutdown_server(n_clicks):
+    """Shutdown server when Quit button is clicked"""
     os._exit(0)
-
 
 app.clientside_callback(
     """
