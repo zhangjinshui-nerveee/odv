@@ -394,6 +394,7 @@ def shutdown_server(n_clicks):
     """Shutdown server when Quit button is clicked"""
     os._exit(0)
 
+
 # Close browser window when Quit button is clicked
 app.clientside_callback(
     """

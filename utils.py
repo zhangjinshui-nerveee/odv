@@ -28,6 +28,7 @@ CHANNEL_COLORS = {
     "REF4": "lightgray",
 }
 
+
 def read_data(file_name: str) -> pd.DataFrame:
     """Read oscilloscope CSV data from file, skipping metadata header rows
 
@@ -39,6 +40,7 @@ def read_data(file_name: str) -> pd.DataFrame:
     """
     df = pd.read_csv(file_name, skiprows=20)
     return df
+
 
 def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
     """Downsample df to include only n data points that are equally spread out
@@ -62,6 +64,7 @@ def downsample(df: pd.DataFrame, n: int) -> pd.DataFrame:
     downsampled_df = df.iloc[indices]
     return downsampled_df
 
+
 def get_channel_columns(df: pd.DataFrame) -> list[str]:
     """Detect columns that should be treated as channels
 
@@ -76,6 +79,7 @@ def get_channel_columns(df: pd.DataFrame) -> list[str]:
         c for c in columns if c.startswith("CH") or c.startswith("REF")
     ]
     return channel_columns
+
 
 def plot_combined(df: pd.DataFrame, show_fig: bool):
     """Plot the given df such that all channels are combined in one plot
@@ -117,6 +121,7 @@ def plot_combined(df: pd.DataFrame, show_fig: bool):
         fig.show()
     return fig
 
+
 def plot_split(df: pd.DataFrame, show_fig: bool):
     """Plot the given df with each channel in a separate subplot
 
@@ -151,6 +156,7 @@ def plot_split(df: pd.DataFrame, show_fig: bool):
     if show_fig:
         fig.show()
     return fig
+
 
 if __name__ == "__main__":
     df = read_data(os.path.join("example_data/MDO3054", "tek5494.csv"))
