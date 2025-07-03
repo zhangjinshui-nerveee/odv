@@ -125,7 +125,9 @@ app.layout = [
 
                 html.Div(
                     [
-                        html.Label("Plot mode:", style={"marginRight": "10px"}),
+                        html.Label(
+                            "Plot mode:", style={"marginRight": "10px"}
+                        ),
                         dcc.RadioItems(
                             id="plot-mode",
                             options=[
@@ -133,7 +135,9 @@ app.layout = [
                                 {"label": "Split", "value": "split"}
                             ],
                             value="combined",
-                            labelStyle={"display": "inline-block", "marginRight": "5px"}
+                            labelStyle={
+                                "display": "inline-block", "marginRight": "5px"
+                            }
                         )
                     ]
                 )
@@ -169,6 +173,7 @@ app.layout = [
     dcc.Store(id="last-file-upload-time-store")
 ]
 
+
 @callback(
     Output("data-store", "data"),
 
@@ -194,6 +199,7 @@ def upload_data(contents, filename, last_modified):
     decoded = base64.b64decode(content_string)
     data = decoded.decode("utf-8")
     return {"data": data, "file_upload_time": datetime.now(UTC).isoformat()}
+
 
 @callback(
     Output("rename-traces-container", "children"),
@@ -247,7 +253,14 @@ def make_trace_rename_inputs(data):
         table_rows.append(row)
 
     table = html.Div([
-        html.H3("Rename Traces", style={"textAlign": "center", "marginTop": "0", "marginBottom": "15px"}),
+        html.H3(
+            "Rename Traces",
+            style={
+                "textAlign": "center",
+                "marginTop": "0",
+                "marginBottom": "15px"
+            }
+        ),
         html.Div(
             table_rows,
             style={
@@ -260,6 +273,7 @@ def make_trace_rename_inputs(data):
     ])
 
     return table, column_names_map
+
 
 @callback(
     Output("trace-names-store", "data", allow_duplicate=True),
@@ -279,6 +293,7 @@ def update_trace_names(values, ids):
         A dictionary mapping original trace names to updated names
     """
     return {i["index"]: val for i, val in zip(ids, values)}
+
 
 @callback(
     Output("graph", "figure"),
@@ -363,7 +378,13 @@ def update_graph(
         if trace.name in trace_visibilities_store:
             trace.visible = trace_visibilities_store[trace.name]
 
-    return fig, {"width": "100%", "height": "100%"}, trace_visibilities_store, file_upload_time
+    return (
+        fig,
+        {"width": "100%", "height": "100%"},
+        trace_visibilities_store,
+        file_upload_time
+    )
+
 
 @callback(
     Input("shutdown-btn", "n_clicks"),
