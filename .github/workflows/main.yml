@@ -30,25 +30,25 @@ jobs:
         pip install pyinstaller
 
     - name: Build with PyInstaller
-      run: pyinstaller --onefile --windowed --name "my-app-${{ matrix.os }}" app.py
+      run: pyinstaller --onefile --windowed --name "odv-${{ matrix.os }}" app.py
 
     # --- THIS IS THE NEW STEP FOR MACOS ---
     - name: Package the macOS App into a Zip file
       # This step only runs on the macOS virtual environment
       if: runner.os == 'macOS'
       # The zip command compresses the .app directory into a .zip file
-      run: zip -r "dist/my-app-macos-latest.zip" "dist/my-app-macos-latest.app"
+      run: zip -r "dist/odv-macos-latest.zip" "dist/odv-macos-latest.app"
     # ------------------------------------
 
     - name: Upload executable as an artifact
       uses: actions/upload-artifact@v4
       with:
-        name: my-app-${{ matrix.os }}
+        name: odv-${{ matrix.os }}
         # --- THE PATH IS UPDATED TO FIND THE NEW .zip FILE ---
         path: |
           dist/*.exe
           dist/*.zip
-          dist/my-app-ubuntu-latest
+          dist/odv-ubuntu-latest
         # ----------------------------------------------------
 
   release:
