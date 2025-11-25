@@ -20,6 +20,23 @@ There are two ways to run ODV: by downloading the ready-to-use application (easi
 
 ### For Users (Running from Executables)
 
+### For Users (Running with Docker)
+
+1.  **Install Docker**: Make sure you have Docker installed on your system. You can download it from [Docker's official website](https://www.docker.com/get-started).
+2.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/zhangjinshui-nerveee/odv.git
+    cd odv
+    ```
+3.  **Build and run the Docker container**:
+    ```bash
+    docker-compose up --build
+    ```
+    This command will build the Docker image (if it hasn't been built yet) and start the application.
+4.  **Open the viewer**:
+    Open your web browser and navigate to `http://127.0.0.1:8050/`. The application will be running inside the Docker container.
+
+
 1. Navigate to the Releases Page of this repository.
 2. Download the latest executable file for your operating system (e.g., odv-windows.exe, odv-macos).
 3. Double-click the file to run the application. A browser window will open with the viewer ready to use.
