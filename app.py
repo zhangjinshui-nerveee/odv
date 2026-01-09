@@ -5,12 +5,28 @@ import io
 from datetime import datetime, UTC
 import webbrowser
 import os
+import threading
+import time
 
 import pandas as pd
 from dash import Dash, html, dcc, Input, Output, State, callback
 from dash.dependencies import ALL
 
 import main
+
+# Heartbeat mechanism for auto-shutdown when browser closes
+last_heartbeat = time.time()
+HEARTBEAT_TIMEOUT = 5  # seconds without heartbeat before shutdown
+
+
+def monitor_heartbeat():
+    """Background thread that exits when browser stops sending heartbeats"""
+    while True:
+        time.sleep(2)
+        if time.time() - last_heartbeat > HEARTBEAT_TIMEOUT:
+            print("Browser closed. Shutting down server...")
+            os._exit(0)
+
 
 app = Dash()
 app.title = "Oscilloscope Data Viewer"
@@ -170,8 +186,20 @@ app.layout = [
     dcc.Store(id="trace-visibilities-store", data={}),
     dcc.Store(id="data-store"),
     dcc.Store(id="trace-names-store", data={}),
-    dcc.Store(id="last-file-upload-time-store")
+    dcc.Store(id="last-file-upload-time-store"),
+    dcc.Interval(id="heartbeat-interval", interval=2000),  # 2 second heartbeat
 ]
+
+
+@callback(
+    Output("heartbeat-interval", "disabled"),
+    Input("heartbeat-interval", "n_intervals")
+)
+def heartbeat(n_intervals):
+    """Update heartbeat timestamp on each interval tick"""
+    global last_heartbeat
+    last_heartbeat = time.time()
+    return False
 
 
 @callback(
@@ -411,6 +439,13 @@ app.clientside_callback(
 )
 
 if __name__ == "__main__":
+    # Start heartbeat monitor thread
+    monitor_thread = threading.Thread(target=monitor_heartbeat, daemon=True)
+    monitor_thread.start()
+
     if not os.environ.get("WERKZEUG_RUN_MAIN"):
         webbrowser.open("http://127.0.0.1:8050")
+
+    print("Server running at http://127.0.0.1:8050")
+    print("Close browser tab to stop server.")
     app.run(debug=True)
