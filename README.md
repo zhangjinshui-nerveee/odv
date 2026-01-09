@@ -66,6 +66,29 @@ python app.py
 A browser window will pop up. If not, open your browser and navigate to the address shown in the terminal, which is typically:
 http://127.0.0.1:8050/
 
+#### One-Line Launch (Linux/macOS)
+
+To run the application with a single command, add an alias to your shell config:
+
+For **zsh** (default on macOS):
+```bash
+echo "alias odv='<path-to-venv>/bin/python <path-to-repo>/app.py'" >> ~/.zshrc
+source ~/.zshrc
+```
+
+For **bash**:
+```bash
+echo "alias odv='<path-to-venv>/bin/python <path-to-repo>/app.py'" >> ~/.bashrc
+source ~/.bashrc
+```
+
+Replace `<path-to-venv>` with your virtual environment path and `<path-to-repo>` with the repository path.
+
+Then simply run:
+```
+odv
+```
+
 ## How to Contribute
 
 We welcome contributions, especially to expand support for more data formats!
