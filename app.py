@@ -17,13 +17,15 @@ import main
 # Heartbeat mechanism for auto-shutdown when browser closes
 last_heartbeat = time.time()
 HEARTBEAT_TIMEOUT = 5  # seconds without heartbeat before shutdown
+heartbeat_received = False  # Track if browser has connected
 
 
 def monitor_heartbeat():
     """Background thread that exits when browser stops sending heartbeats"""
     while True:
         time.sleep(2)
-        if time.time() - last_heartbeat > HEARTBEAT_TIMEOUT:
+        # Only check timeout after first heartbeat (browser connected)
+        if heartbeat_received and time.time() - last_heartbeat > HEARTBEAT_TIMEOUT:
             print("Browser closed. Shutting down server...")
             os._exit(0)
 
@@ -197,8 +199,9 @@ app.layout = [
 )
 def heartbeat(n_intervals):
     """Update heartbeat timestamp on each interval tick"""
-    global last_heartbeat
+    global last_heartbeat, heartbeat_received
     last_heartbeat = time.time()
+    heartbeat_received = True
     return False
 
 
@@ -438,13 +441,19 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 
+def open_browser():
+    """Open browser after a short delay to ensure server is ready"""
+    time.sleep(1)
+    webbrowser.open("http://127.0.0.1:8050")
+
+
 if __name__ == "__main__":
     # Start heartbeat monitor thread
     monitor_thread = threading.Thread(target=monitor_heartbeat, daemon=True)
     monitor_thread.start()
 
     if not os.environ.get("WERKZEUG_RUN_MAIN"):
-        webbrowser.open("http://127.0.0.1:8050")
+        threading.Thread(target=open_browser, daemon=True).start()
 
     print("Server running at http://127.0.0.1:8050")
     print("Close browser tab to stop server.")
